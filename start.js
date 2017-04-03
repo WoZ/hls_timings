@@ -11,6 +11,7 @@ const Hlsdump = require('./hlsdump.js');
 let masterPlaylistUrl;
 if (argv._.length === 1) {
   masterPlaylistUrl = argv._[0];
+  start(masterPlaylistUrl);
 } else if (argv._.length === 3) {
   let balancerUrl = argv._[0];
   let stream = argv._[1];
