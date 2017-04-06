@@ -1,4 +1,5 @@
 var http = require("http"),
+    https = require("https"),
     url = require("url"),
     fs = require("fs"),
     util = require("util");
@@ -13,10 +14,19 @@ var PlaylistInfItem = function (baseurl, parameters, path) {
 
         self.type = "inf";
 
-        if (/^http\:\/\//.test(path) === false) {
-            self.url = baseurl + path;
-        } else {
+        if (/^http\:\/\//.test(path) !== false) {
             self.url = path;
+            self.httpOrHttps = http;
+        } else if (/^http\:\/\//.test(path) !== false) {
+            self.url = path;
+            self.httpOrHttps = https;
+        } else {
+            if (/^http\:\/\//.test(baseurl)) {
+                self.httpOrHttps = http;
+            } else {
+                self.httpOrHttps = https;
+            }
+            self.url = baseurl + path;
         }
 
         splittedParameters = parameters.split(/, {0,1}/);
@@ -31,7 +41,7 @@ var PlaylistInfItem = function (baseurl, parameters, path) {
         var self = this,
             objUrl = url.parse(self.url, true);
         let startTime = process.hrtime();
-        let req = http.request(objUrl, function (res) {
+        let req = self.httpOrHttps.request(objUrl, function (res) {
             if (res.statusCode >= 300 && res.statusCode < 400) {
                 console.log('[Media] statusCode=%d, path=%s', res.statusCode, self.path);
                 self.download(filename, dumpChunks, callback);

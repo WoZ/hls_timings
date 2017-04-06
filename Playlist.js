@@ -1,4 +1,5 @@
 var http = require("http"),
+    https = require("https"),
     url = require("url"),
     util = require("util"),
     EventEmitter = require('events').EventEmitter,
@@ -21,11 +22,17 @@ var Playlist = function (path, retry) {
             path = require('path'),
             req;
 
-        self.baseurl = urls.protocol + "//" + urls.hostname + ":" + (typeof urls.port !== "undefined" ? urls.port : "80");
+        self.baseurl = urls.protocol + "//" + urls.hostname;
+
+        if (urls.port !== null) {
+            self.baseurl += ':' + urls.port;
+        }
+
         self.baseurl += path.dirname(urls.pathname) + "/";
 
         let startTime = process.hrtime();
-        req = http.request(urls, function (res) {
+        const httprOrHttps = urls.protocol === 'http:' ? http : https;
+        req = httprOrHttps.request(urls, function (res) {
 
             if (res.statusCode !== 200) {
                 let timeElapsed = process.hrtime(startTime);
@@ -151,7 +158,6 @@ var Playlist = function (path, retry) {
 
     Playlist.prototype.get = function (callback, playlistItem) {
         var self = this;
-
         if (typeof playlistItem === 'undefined') {
             playlistItem = null;
         }
